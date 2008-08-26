@@ -46,7 +46,7 @@ public class Haml4jServlet extends HttpServlet {
 		
 		String fullText = sb.toString();
 		for (String match : match(fullText)) {
-			fullText = fullText.replace("${" + match + "}", xInY(match, req));
+			fullText = fullText.replace("${" + match + "}", "'" + xInY(match, req) + "'");
 		}
 
 		ScriptEngine engine = jrubyEngine();
