@@ -1,8 +1,8 @@
 package com.mouseoverstudio.haml4j;
 
 import static com.mouseoverstudio.haml4j.Haml4jHelper.jrubyEngine;
-import static com.mouseoverstudio.haml4j.Haml4jHelper.match;
-import static com.mouseoverstudio.haml4j.Haml4jHelper.xInY;
+import static com.mouseoverstudio.haml4j.Haml4jHelper.replaceVariablesIn;
+import static com.mouseoverstudio.haml4j.Haml4jHelper.write;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,12 +17,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public class Haml4jServlet extends HttpServlet {
-	
+
 	private String viewsRelativePath = "../../";
-	
+
 	public Haml4jServlet() {
 	}
-	
+
 	public Haml4jServlet(String viewsRelativePath) {
 		this.viewsRelativePath = viewsRelativePath;
 	}
@@ -33,36 +33,33 @@ public class Haml4jServlet extends HttpServlet {
 		process(req, resp);
 	}
 
-	protected void process(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
-		String relativePath = templatePathFrom(req);
-		BufferedReader reader = readerFor(relativePath);
-
-		String line;
-		StringBuilder sb = new StringBuilder();
-		while ((line = reader.readLine()) != null) {
-			sb.append(line.concat("\n"));
-		}
-		
-		String fullText = sb.toString();
-		for (String match : match(fullText)) {
-			fullText = fullText.replace("${" + match + "}", "'" + xInY(match, req) + "'");
-		}
-
+	protected void process(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		String scriptText = textFrom(templateBindedTo(request));
 		ScriptEngine engine = jrubyEngine();
 		ScriptContext context = engine.getContext();
-		context.setAttribute("haml", fullText, ScriptContext.ENGINE_SCOPE);
-		
+		context.setAttribute("haml", scriptText, ScriptContext.ENGINE_SCOPE);
 		try {
 			engine.eval("require 'rubygems'");
 			engine.eval("require 'haml'");
 			String result = (String) engine
 					.eval("Haml::Engine.new($haml).render");
-			resp.getWriter().write(result);
+			result = replaceVariablesIn(result).withValuesFrom(request);
+			write(result).in(response);
 		} catch (ScriptException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public String textFrom(String template) throws IOException {
+		String line;
+		BufferedReader reader = readerFor(template);
+		StringBuilder sb = new StringBuilder();
+		while ((line = reader.readLine()) != null) {
+			sb.append(line.concat("\n"));
+		}
+		return sb.toString();
 	}
 
 	private BufferedReader readerFor(String path) {
@@ -75,7 +72,7 @@ public class Haml4jServlet extends HttpServlet {
 	}
 
 	// Taken from Freemarker
-	protected String templatePathFrom(HttpServletRequest request) {
+	protected String templateBindedTo(HttpServletRequest request) {
 		// First, see if it is an included request
 		String includeServletPath = (String) request
 				.getAttribute("javax.servlet.include.servlet_path");

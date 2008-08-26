@@ -5,6 +5,7 @@ import static junit.framework.Assert.fail;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.createNiceMock;
 import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,6 +30,8 @@ public class Haml4jServletTest {
 		writer = new MockedPrintWriter();
 		servlet = new Haml4jServlet("resources/");
 		expect(response.getWriter()).andReturn(writer);
+		response.setContentType("text/html");
+		expectLastCall().once();
 	}
 
 	@Test
