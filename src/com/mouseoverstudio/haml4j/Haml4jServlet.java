@@ -1,5 +1,6 @@
 package com.mouseoverstudio.haml4j;
 
+import static com.mouseoverstudio.haml4j.Haml4jHelper.jrubyEngine;
 import static com.mouseoverstudio.haml4j.Haml4jHelper.match;
 import static com.mouseoverstudio.haml4j.Haml4jHelper.xInY;
 
@@ -9,7 +10,6 @@ import java.io.InputStreamReader;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -45,21 +45,14 @@ public class Haml4jServlet extends HttpServlet {
 		}
 		
 		String fullText = sb.toString();
-		
 		for (String match : match(fullText)) {
-			System.out.println(match);
-			fullText.replaceAll(match, xInY(match, req));
+			fullText = fullText.replace("${" + match + "}", xInY(match, req));
 		}
-		
-		
-		
-//		matcher.
 
-		ScriptEngineManager manager = new ScriptEngineManager();
-		ScriptEngine engine = manager.getEngineByName("jruby");
+		ScriptEngine engine = jrubyEngine();
 		ScriptContext context = engine.getContext();
-
 		context.setAttribute("yaml", fullText, ScriptContext.ENGINE_SCOPE);
+		
 		try {
 			engine.eval("require 'rubygems'");
 			engine.eval("require 'haml'");
@@ -72,12 +65,12 @@ public class Haml4jServlet extends HttpServlet {
 		}
 	}
 
-	protected BufferedReader readerFor(String path) {
+	private BufferedReader readerFor(String path) {
 		return new BufferedReader(new InputStreamReader(classLoader()
 				.getResourceAsStream(viewsRelativePath + path)));
 	}
 
-	protected ClassLoader classLoader() {
+	private ClassLoader classLoader() {
 		return getClass().getClassLoader();
 	}
 

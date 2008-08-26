@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import javax.servlet.http.HttpServletRequest;
 
 public class Haml4jHelper {
@@ -40,6 +42,11 @@ public class Haml4jHelper {
 			}
 		}
 		return value;
+	}
+	
+	public static ScriptEngine jrubyEngine() {
+		ScriptEngineManager manager = new ScriptEngineManager();
+		return manager.getEngineByName("jruby");
 	}
 
 }
