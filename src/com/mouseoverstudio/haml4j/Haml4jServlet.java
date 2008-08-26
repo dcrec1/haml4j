@@ -51,13 +51,13 @@ public class Haml4jServlet extends HttpServlet {
 
 		ScriptEngine engine = jrubyEngine();
 		ScriptContext context = engine.getContext();
-		context.setAttribute("yaml", fullText, ScriptContext.ENGINE_SCOPE);
+		context.setAttribute("haml", fullText, ScriptContext.ENGINE_SCOPE);
 		
 		try {
 			engine.eval("require 'rubygems'");
 			engine.eval("require 'haml'");
 			String result = (String) engine
-					.eval("Haml::Engine.new($yaml).render");
+					.eval("Haml::Engine.new($haml).render");
 			resp.getWriter().write(result);
 		} catch (ScriptException e) {
 			// TODO Auto-generated catch block
