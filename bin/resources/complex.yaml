@@ -15,4 +15,4 @@
           %p.body= entry.body
     #footer
       %p
-        All content copyright © Bob
+        All content copyright Â© Bob
