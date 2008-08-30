@@ -1,4 +1,4 @@
-package com.mouseoverstudio.haml4j.test;
+package resources;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;

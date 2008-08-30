@@ -1,16 +1,18 @@
 package com.mouseoverstudio.haml4j;
 
 import static com.mouseoverstudio.haml4j.Haml4jHelper.jrubyEngine;
-import static com.mouseoverstudio.haml4j.Haml4jHelper.replaceVariablesIn;
+import static com.mouseoverstudio.haml4j.Haml4jHelper.putIn;
 import static com.mouseoverstudio.haml4j.Haml4jHelper.write;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
+import javax.script.SimpleScriptContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +21,21 @@ import javax.servlet.http.HttpServletResponse;
 public class Haml4jServlet extends HttpServlet {
 
 	private String viewsRelativePath = "../../";
+	private ScriptEngine engine;
+	private Map<String, String> cache;
+
+	@Override
+	public void init() {
+		cache = new HashMap<String, String>();
+		engine = jrubyEngine();
+		try {
+			engine.eval("require 'rubygems'");
+			engine.eval("require 'haml'");
+		} catch (ScriptException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
 	public Haml4jServlet() {
 	}
@@ -35,16 +52,19 @@ public class Haml4jServlet extends HttpServlet {
 
 	protected void process(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		String scriptText = textFrom(templateBindedTo(request));
-		ScriptEngine engine = jrubyEngine();
-		ScriptContext context = engine.getContext();
-		context.setAttribute("haml", scriptText, ScriptContext.ENGINE_SCOPE);
+		String template = templateBindedTo(request);
+		String scriptText = cache.get(template);
+		if (scriptText == null) {
+			scriptText = textFrom(template);
+			cache.put(template, scriptText);
+		}
+		SimpleScriptContext scriptContext = new SimpleScriptContext();
+		scriptContext.setAttribute("haml", scriptText,
+				SimpleScriptContext.ENGINE_SCOPE);
+		putIn(scriptContext).variablesFrom(scriptText).availableIn(request);
 		try {
-			engine.eval("require 'rubygems'");
-			engine.eval("require 'haml'");
-			String result = (String) engine
-					.eval("Haml::Engine.new($haml).render");
-			result = replaceVariablesIn(result).withValuesFrom(request);
+			String result = (String) engine.eval(
+					"Haml::Engine.new($haml).render", scriptContext);
 			write(result).in(response);
 		} catch (ScriptException e) {
 			// TODO Auto-generated catch block
