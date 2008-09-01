@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -35,7 +36,7 @@ public class Haml4jServletTest {
 	private MockedPrintWriter writer;
 
 	@BeforeClass
-	public static void init() {
+	public static void init() throws ServletException {
 		servlet = new Haml4jServlet("resources/");
 		servlet.init();
 	}

@@ -12,6 +12,6 @@ def haml_engine_for(file_name)
   return cache[file_name]
 end
 
-def render(file_name)
-  return haml_engine_for(file_name).render
+def render()
+  return haml_engine_for($file).render
 end
