@@ -1,0 +1,37 @@
+h2. Description
+
+Haml4j is a Java servlet that interprets a Haml script and returns the result as a  http response. 
+
+h2. Installation
+
+Just add the following to your web.xml file:
+
+<pre>
+<code>
+<servlet>
+    <servlet-name>haml4j</servlet-name>
+    <servlet-class>
+        com.mouseoverstudio.haml4j.Haml4jServlet
+    </servlet-class>
+    <load-on-startup>1</load-on-startup>
+</servlet>
+<servlet-mapping>
+    <servlet-name>haml4j</servlet-name>
+    <url-pattern>*.haml</url-pattern>
+</servlet-mapping>
+</code>
+</pre>
+
+h2. Usage
+
+You simple create your views script files (with .haml extension by default) in your WebContent folder and when called, Haml4j will do the parsing and return the result. Parameters from the request or coming from the controller can be accessed as global variables.
+
+Dont be afraid with global variables. Each http request is a thread and parameters from the controller are global variables only in the current thread, so the request from Zeca cannot access variables from the request from Jimmy, for example.
+
+h2. Examples
+
+There is a Github project called "Haml4j Demo Application":http://github.com/dcrec1/haml4j_demo_app/tree/master which demonstrtes Haml4j in action in conjunction with VRaptor as the controller.
+
+h2. More info
+
+Brazilian readers can get more information "here":http://www.mouseoverstudio.com/blog/?p=117 .
